@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Virtual Tour - Example Project</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    #buttons {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      display: block;
+      width: 250px;
+      transition: width 0.3s;
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .nav-button {
+      padding: 10px 16px;
+      margin: 5px 0;
+      font-size: 14px;
+      background-color: #ffffffcc;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      width: 48%;
+    }
+
+    .nav-button:hover {
+      background-color: #ddd;
+    }
+
+    #panorama {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      bottom: 0;
+    }
+
+    #buttons.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="buttons">
+    <div class="button-row">
+      <button class="nav-button" onclick="window.open('zdj2.jpg')">Construction Photo 1</button>
+      <button class="nav-button" onclick="window.open('rfin2.png')">Render 1</button>
+
+      <button class="nav-button" onclick="window.open('zdj3.jpg')">Construction Photo 2</button>
+      <button class="nav-button" onclick="window.open('rfin5.png')">Render 2</button>
+
+      <button class="nav-button" onclick="window.open('12601_MP_2025V22[1].pdf')">Floor Plan 1 (PDF)</button>
+      <button class="nav-button" onclick="window.open('12601_MP_2025_1.png')">Floor Plan 2</button>
+
+      <button class="nav-button" onclick="loadPanorama1806()">Panorama 18.06</button>
+      <button class="nav-button" onclick="loadPanorama2706()">Panorama 27.06</button>
+      <button class="nav-button" onclick="loadPanorama2906()">Panorama 29.06</button>
+    </div>
+  </div>
+
+  <div id="panorama"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.105.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/pchen66/panolens.js@0.10.2/build/panolens.min.js"></script>
+
+  <script>
+    const pano = new PANOLENS.ImagePanorama('pano.png');
+    const viewer = new PANOLENS.Viewer({
+      container: document.querySelector('#panorama'),
+      output: 'console',
+      autoRotate: false
+    });
+
+    viewer.add(pano);
+    viewer.setPanorama(pano);
+
+    function loadPanorama1806() {
+      const pano1806 = new PANOLENS.ImagePanorama('newpano.png');
+      viewer.add(pano1806);
+      viewer.setPanorama(pano1806);
+    }
+
+    function loadPanorama2706() {
+      const pano2706 = new PANOLENS.ImagePanorama('newpano2706.png');
+      viewer.add(pano2706);
+      viewer.setPanorama(pano2706);
+    }
+
+    function loadPanorama2906() {
+      const pano2906 = new PANOLENS.ImagePanorama('nosz.png');
+      viewer.add(pano2906);
+      viewer.setPanorama(pano2906);
+    }
+  </script>
+</body>
+</html>
