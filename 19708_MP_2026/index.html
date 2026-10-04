@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>19708_MP_2026</title>
+
   <style>
     html, body {
       margin: 0;
@@ -90,8 +91,13 @@
     }
 
     @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @media (max-width: 768px) {
@@ -122,150 +128,336 @@
     }
   </style>
 </head>
+
 <body>
 
-<div id="panorama"></div>
-<div id="menuPanel" class="menu-panel"></div>
-<div id="cursorLoader" class="cursor-loader"></div>
+  <div id="panorama"></div>
+  <div id="menuPanel" class="menu-panel"></div>
+  <div id="cursorLoader" class="cursor-loader"></div>
 
-<div class="hamburger-wrap">
-  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">☰</button>
-</div>
+  <div class="hamburger-wrap">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">☰</button>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.105.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/pchen66/panolens.js@0.10.2/build/panolens.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.105.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/pchen66/panolens.js@0.10.2/build/panolens.min.js"></script>
 
-<script>
-  const panorama = new PANOLENS.ImagePanorama('PANO.webp');
+  <script>
 
-  const viewer = new PANOLENS.Viewer({
-    container: document.getElementById('panorama'),
-    controlBar: false,
-    autoRotate: false,
-    output: 'console'
-  });
+    // =========================================================
+    // PANORAMAS
+    // =========================================================
 
-  viewer.add(panorama);
+    const currentPanorama = new PANOLENS.ImagePanorama('FIN1.webp');
+    const oldPanorama = new PANOLENS.ImagePanorama('PANO.webp');
 
-  const cursorLoader = document.getElementById('cursorLoader');
+    let activePanorama = currentPanorama;
 
-  function showLoader() {
-    cursorLoader.style.left = (window.innerWidth / 2 - 13) + 'px';
-    cursorLoader.style.top = (window.innerHeight / 2 - 13) + 'px';
-    cursorLoader.classList.add('visible');
-  }
 
-  function hideCursorLoader() {
-    cursorLoader.classList.remove('visible');
-  }
+    // =========================================================
+    // VIEWER
+    // =========================================================
 
-  function openFile(file) {
-    window.open(file, '_blank');
-    closeMenu();
-  }
-
-  function openHamburgerMenu() {
-    const panel = document.getElementById('menuPanel');
-
-    if (panel.style.display === 'block') {
-      closeMenu();
-      return;
-    }
-
-    panel.innerHTML = '';
-
-    const items = [
-      {
-        label: 'View draft',
-        action: () => openFile('19708_MP_2026_A3V11E.pdf')
-      },
-      {
-        label: 'Design document',
-        action: () => openFile('19708_MP_2026.pdf')
-      },
-      {
-        label: 'Credentials',
-        action: () => openFile('https://kabaszyn.dev/')
-      }
-    ];
-
-    items.forEach(i => {
-      const b = document.createElement('button');
-      b.textContent = i.label;
-      b.onclick = i.action;
-      panel.appendChild(b);
+    const viewer = new PANOLENS.Viewer({
+      container: document.getElementById('panorama'),
+      controlBar: false,
+      autoRotate: false,
+      output: 'console'
     });
 
-    if (window.innerWidth <= 768) {
-      panel.style.left = '12px';
-      panel.style.right = '12px';
-      panel.style.bottom = '84px';
-      panel.style.top = 'auto';
-    } else {
-      panel.style.right = '16px';
-      panel.style.left = 'auto';
-      panel.style.bottom = '84px';
-      panel.style.top = 'auto';
+    viewer.add(currentPanorama);
+    viewer.add(oldPanorama);
+
+
+    // =========================================================
+    // LOADER
+    // =========================================================
+
+    const cursorLoader = document.getElementById('cursorLoader');
+
+    function showLoader() {
+      cursorLoader.style.left = (window.innerWidth / 2 - 13) + 'px';
+      cursorLoader.style.top = (window.innerHeight / 2 - 13) + 'px';
+      cursorLoader.classList.add('visible');
     }
 
-    panel.style.display = 'block';
-  }
+    function hideCursorLoader() {
+      cursorLoader.classList.remove('visible');
+    }
 
-  function closeMenu() {
-    document.getElementById('menuPanel').style.display = 'none';
-  }
 
-  document.getElementById('hamburgerBtn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    openHamburgerMenu();
-  });
+    // =========================================================
+    // PANORAMA SWITCHING
+    // =========================================================
 
-  document.addEventListener('click', (e) => {
-    const panel = document.getElementById('menuPanel');
-    const hamburger = document.getElementById('hamburgerBtn');
-    if (!panel.contains(e.target) && e.target !== hamburger) closeMenu();
-  });
+    function switchPanorama() {
 
-  panorama.addEventListener('enter-fade-start', () => {
-    setTimeout(() => {
-      hideCursorLoader();
-    }, 250);
-  });
+      showLoader();
 
-  // ===== DEBUG: click panorama and read XYZ/yaw/pitch in console =====
-  function xyzToYawPitch(x, y, z) {
-    const radius = Math.sqrt(x*x + y*y + z*z);
-    const yaw = Math.atan2(x, -z) * 180 / Math.PI;
-    const pitch = Math.asin(y / radius) * 180 / Math.PI;
-    return {
-      yaw: Math.round(yaw),
-      pitch: Math.round(pitch)
-    };
-  }
+      if (activePanorama === currentPanorama) {
 
-  panorama.addEventListener('click', function(event) {
-    if (!event.intersects || !event.intersects.length) return;
+        // FIN1.webp -> PANO.webp
+        activePanorama = oldPanorama;
+        viewer.setPanorama(oldPanorama);
 
-    const point = event.intersects[0].point;
-    const x = Math.round(point.x);
-    const y = Math.round(point.y);
-    const z = Math.round(point.z);
-    const ang = xyzToYawPitch(point.x, point.y, point.z);
+      } else {
 
-    console.log('----------------------------------');
-    console.log('Project: 18505_MP_2026A');
-    console.log('Panorama: fin.jpeg');
-    console.log(`XYZ: ${x}, ${y}, ${z}`);
-    console.log(`Yaw/Pitch: ${ang.yaw}°, ${ang.pitch}°`);
-    console.log(`spot.position.set(${x}, ${y}, ${z});`);
-    console.log(`// or use angles: yaw ${ang.yaw}, pitch ${ang.pitch}`);
-    console.log('----------------------------------');
-  });
+        // PANO.webp -> FIN1.webp
+        activePanorama = currentPanorama;
+        viewer.setPanorama(currentPanorama);
 
-  showLoader();
-  viewer.setPanorama(panorama);
-  window.viewer = viewer;
-</script>
+      }
+
+      closeMenu();
+    }
+
+
+    // =========================================================
+    // OPEN FILE
+    // =========================================================
+
+    function openFile(file) {
+      window.open(file, '_blank');
+      closeMenu();
+    }
+
+
+    // =========================================================
+    // HAMBURGER MENU
+    // =========================================================
+
+    function openHamburgerMenu() {
+
+      const panel = document.getElementById('menuPanel');
+
+      if (panel.style.display === 'block') {
+        closeMenu();
+        return;
+      }
+
+      panel.innerHTML = '';
+
+
+      // Zmiana nazwy przycisku zależnie od aktualnej panoramy
+      const panoramaButtonLabel =
+        activePanorama === currentPanorama
+          ? 'Old panorama'
+          : 'Current panorama';
+
+
+      const items = [
+
+        {
+          label: panoramaButtonLabel,
+          action: switchPanorama
+        },
+
+        {
+          label: 'View draft',
+          action: () => openFile('19708_MP_2026_A3V11E.pdf')
+        },
+
+        {
+          label: 'Design document',
+          action: () => openFile('19708_MP_2026.pdf')
+        },
+
+        {
+          label: 'Credentials',
+          action: () => openFile('https://kabaszyn.dev/')
+        }
+
+      ];
+
+
+      items.forEach(i => {
+
+        const b = document.createElement('button');
+
+        b.textContent = i.label;
+        b.onclick = i.action;
+
+        panel.appendChild(b);
+
+      });
+
+
+      // Pozycja menu
+
+      if (window.innerWidth <= 768) {
+
+        panel.style.left = '12px';
+        panel.style.right = '12px';
+        panel.style.bottom = '84px';
+        panel.style.top = 'auto';
+
+      } else {
+
+        panel.style.right = '16px';
+        panel.style.left = 'auto';
+        panel.style.bottom = '84px';
+        panel.style.top = 'auto';
+
+      }
+
+
+      panel.style.display = 'block';
+    }
+
+
+    // =========================================================
+    // CLOSE MENU
+    // =========================================================
+
+    function closeMenu() {
+      document.getElementById('menuPanel').style.display = 'none';
+    }
+
+
+    // =========================================================
+    // HAMBURGER BUTTON
+    // =========================================================
+
+    document.getElementById('hamburgerBtn').addEventListener('click', (e) => {
+
+      e.stopPropagation();
+
+      openHamburgerMenu();
+
+    });
+
+
+    // =========================================================
+    // CLOSE MENU WHEN CLICKING OUTSIDE
+    // =========================================================
+
+    document.addEventListener('click', (e) => {
+
+      const panel = document.getElementById('menuPanel');
+      const hamburger = document.getElementById('hamburgerBtn');
+
+      if (!panel.contains(e.target) && e.target !== hamburger) {
+        closeMenu();
+      }
+
+    });
+
+
+    // =========================================================
+    // PANORAMA LOADING
+    // =========================================================
+
+    currentPanorama.addEventListener('enter-fade-start', () => {
+
+      setTimeout(() => {
+        hideCursorLoader();
+      }, 250);
+
+    });
+
+
+    oldPanorama.addEventListener('enter-fade-start', () => {
+
+      setTimeout(() => {
+        hideCursorLoader();
+      }, 250);
+
+    });
+
+
+    // =========================================================
+    // DEBUG:
+    // CLICK PANORAMA AND READ XYZ / YAW / PITCH
+    // =========================================================
+
+    function xyzToYawPitch(x, y, z) {
+
+      const radius = Math.sqrt(x*x + y*y + z*z);
+
+      const yaw =
+        Math.atan2(x, -z) * 180 / Math.PI;
+
+      const pitch =
+        Math.asin(y / radius) * 180 / Math.PI;
+
+      return {
+        yaw: Math.round(yaw),
+        pitch: Math.round(pitch)
+      };
+
+    }
+
+
+    function debugPanoramaClick(event) {
+
+      if (!event.intersects || !event.intersects.length) {
+        return;
+      }
+
+      const point = event.intersects[0].point;
+
+      const x = Math.round(point.x);
+      const y = Math.round(point.y);
+      const z = Math.round(point.z);
+
+      const ang = xyzToYawPitch(
+        point.x,
+        point.y,
+        point.z
+      );
+
+
+      console.log('----------------------------------');
+
+      console.log(
+        'Panorama:',
+        activePanorama === currentPanorama
+          ? 'FIN1.webp'
+          : 'PANO.webp'
+      );
+
+      console.log(`XYZ: ${x}, ${y}, ${z}`);
+
+      console.log(
+        `Yaw/Pitch: ${ang.yaw}°, ${ang.pitch}°`
+      );
+
+      console.log(
+        `spot.position.set(${x}, ${y}, ${z});`
+      );
+
+      console.log(
+        `// or use angles: yaw ${ang.yaw}, pitch ${ang.pitch}`
+      );
+
+      console.log('----------------------------------');
+
+    }
+
+
+    currentPanorama.addEventListener(
+      'click',
+      debugPanoramaClick
+    );
+
+    oldPanorama.addEventListener(
+      'click',
+      debugPanoramaClick
+    );
+
+
+    // =========================================================
+    // START
+    // =========================================================
+
+    showLoader();
+
+    // Domyślna panorama = FIN1.webp
+    viewer.setPanorama(currentPanorama);
+
+    window.viewer = viewer;
+
+  </script>
 
 </body>
 </html>
