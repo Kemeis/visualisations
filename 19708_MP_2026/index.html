@@ -149,7 +149,7 @@
     // =========================================================
 
     const currentPanorama = new PANOLENS.ImagePanorama('FIN1.webp');
-    const oldPanorama = new PANOLENS.ImagePanorama('PANO.webp');
+    const alternativePanorama = new PANOLENS.ImagePanorama('good.webp');
 
     let activePanorama = currentPanorama;
 
@@ -166,7 +166,7 @@
     });
 
     viewer.add(currentPanorama);
-    viewer.add(oldPanorama);
+    viewer.add(alternativePanorama);
 
 
     // =========================================================
@@ -187,7 +187,7 @@
 
 
     // =========================================================
-    // PANORAMA SWITCHING
+    // PANORAMA SWITCHING: FIN1.webp <-> good.webp
     // =========================================================
 
     function switchPanorama() {
@@ -196,15 +196,17 @@
 
       if (activePanorama === currentPanorama) {
 
-        // FIN1.webp -> PANO.webp
-        activePanorama = oldPanorama;
-        viewer.setPanorama(oldPanorama);
+        // FIN1.webp -> good.webp
+        activePanorama = alternativePanorama;
+        viewer.setPanorama(alternativePanorama);
+        history.replaceState(null, '', '#good');
 
       } else {
 
-        // PANO.webp -> FIN1.webp
+        // good.webp -> FIN1.webp
         activePanorama = currentPanorama;
         viewer.setPanorama(currentPanorama);
+        history.replaceState(null, '', '#fin1');
 
       }
 
@@ -238,11 +240,8 @@
       panel.innerHTML = '';
 
 
-      // Zmiana nazwy przycisku zależnie od aktualnej panoramy
-      const panoramaButtonLabel =
-        activePanorama === currentPanorama
-          ? 'Old panorama'
-          : 'Current panorama';
+      // Przycisk przełączający FIN1.webp <-> good.webp
+      const panoramaButtonLabel = 'Alternative tiles';
 
 
       const items = [
@@ -356,7 +355,7 @@
     });
 
 
-    oldPanorama.addEventListener('enter-fade-start', () => {
+    alternativePanorama.addEventListener('enter-fade-start', () => {
 
       setTimeout(() => {
         hideCursorLoader();
@@ -440,7 +439,7 @@
       debugPanoramaClick
     );
 
-    oldPanorama.addEventListener(
+    alternativePanorama.addEventListener(
       'click',
       debugPanoramaClick
     );
@@ -452,8 +451,35 @@
 
     showLoader();
 
-    // Domyślna panorama = FIN1.webp
-    viewer.setPanorama(currentPanorama);
+    // =========================================================
+    // START / DIRECT LINK
+    // =========================================================
+
+    function setPanoramaFromHash() {
+
+      const hash = window.location.hash.toLowerCase();
+
+      if (hash === '#good') {
+
+        activePanorama = alternativePanorama;
+        viewer.setPanorama(alternativePanorama);
+
+      } else {
+
+        // Brak hasha lub #fin1 = FIN1.webp
+        activePanorama = currentPanorama;
+        viewer.setPanorama(currentPanorama);
+
+      }
+
+    }
+
+    setPanoramaFromHash();
+
+    // Pozwala otworzyć/zmienić panoramę przez link:
+    // index.html#fin1
+    // index.html#good
+    window.addEventListener('hashchange', setPanoramaFromHash);
 
     window.viewer = viewer;
 
