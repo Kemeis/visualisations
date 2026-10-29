@@ -136,7 +136,8 @@
 <script src="https://cdn.jsdelivr.net/gh/pchen66/panolens.js@0.10.2/build/panolens.min.js"></script>
 
 <script>
-  const panorama = new PANOLENS.ImagePanorama('fini.jpeg');
+  const panorama = new PANOLENS.ImagePanorama('F4.webp');
+  const oldPanorama = new PANOLENS.ImagePanorama('fini.jpeg');
 
   const viewer = new PANOLENS.Viewer({
     container: document.getElementById('panorama'),
@@ -146,6 +147,7 @@
   });
 
   viewer.add(panorama);
+  viewer.add(oldPanorama);
 
   const cursorLoader = document.getElementById('cursorLoader');
 
@@ -180,16 +182,12 @@
         action: () => openFile('18505_MP_2026_A3V6_8A.pdf')
       },
       {
-        label: 'Topdown with draft',
-        action: () => openFile('at1.png')
+        label: 'Old panorama',
+        action: () => { viewer.setPanorama(oldPanorama); closeMenu(); }
       },
       {
-        label: 'Topdown render',
-        action: () => openFile('at2.png')
-      },
-      {
-        label: 'Go to 18505_MP_2026 B',
-        action: () => openFile('https://visualisations.kabaszyn.dev/18505_MP_2026B/')
+        label: 'Design document',
+        action: () => openFile('18505_MP_2025_v3.pdf')
       },
       {
         label: 'Credentials',
