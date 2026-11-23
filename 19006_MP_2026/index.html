@@ -138,10 +138,10 @@
 <script>
   // Share ?version=v1 to open the alternative panorama directly.
   const params = new URLSearchParams(window.location.search);
-  const initialVersion = params.get('version') === 'v1' ? 'v1' : 'v2';
+  const initialVersion = params.get('version') === 'v1' ? 'v1' : 'v3';
   let currentVersion = initialVersion;
   const panoramaV1 = new PANOLENS.ImagePanorama('v1.webp');
-  const panoramaV2 = new PANOLENS.ImagePanorama('v2.webp');
+  const panoramaV3 = new PANOLENS.ImagePanorama('v3.webp');
 
   const viewer = new PANOLENS.Viewer({
     container: document.getElementById('panorama'),
@@ -151,7 +151,7 @@
   });
 
   // Add only the initial panorama first. The second one is added when requested.
-  const initialPanorama = currentVersion === 'v1' ? panoramaV1 : panoramaV2;
+  const initialPanorama = currentVersion === 'v1' ? panoramaV1 : panoramaV3;
   viewer.add(initialPanorama);
 
   const cursorLoader = document.getElementById('cursorLoader');
@@ -172,7 +172,7 @@
       return;
     }
     currentVersion = version;
-    const next = version === 'v1' ? panoramaV1 : panoramaV2;
+    const next = version === 'v1' ? panoramaV1 : panoramaV3;
     if (!next.parent) viewer.add(next);
     showLoader();
     viewer.setPanorama(next);
@@ -201,7 +201,7 @@
     const items = [
       {
         label: currentVersion === 'v1' ? 'Default version' : 'Alternative version',
-        action: () => switchPanorama(currentVersion === 'v1' ? 'v2' : 'v1')
+        action: () => switchPanorama(currentVersion === 'v1' ? 'v3' : 'v1')
       },
       {
         label: 'Credentials',
@@ -253,7 +253,7 @@
     return { yaw: Math.round(yaw), pitch: Math.round(pitch) };
   }
 
-  [panoramaV1, panoramaV2].forEach(panorama => {
+  [panoramaV1, panoramaV3].forEach(panorama => {
     panorama.addEventListener('enter-fade-start', () => {
       setTimeout(hideCursorLoader, 250);
     });
@@ -267,7 +267,7 @@
       const ang = xyzToYawPitch(point.x, point.y, point.z);
       console.log('----------------------------------');
       console.log('Project: 19006_MP_2026');
-      console.log('Panorama: ' + (panorama === panoramaV1 ? 'v1.webp' : 'v2.webp'));
+      console.log('Panorama: ' + (panorama === panoramaV1 ? 'v1.webp' : 'v3.webp'));
       console.log(`XYZ: ${x}, ${y}, ${z}`);
       console.log(`Yaw/Pitch: ${ang.yaw}°, ${ang.pitch}°`);
       console.log(`spot.position.set(${x}, ${y}, ${z});`);
