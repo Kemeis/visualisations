@@ -136,12 +136,16 @@
 <script src="https://cdn.jsdelivr.net/gh/pchen66/panolens.js@0.10.2/build/panolens.min.js"></script>
 
 <script>
-  // Share ?version=v1 to open the alternative panorama directly.
+  // Share ?version=v1 or ?version=v3 to open a specific older panorama.
   const params = new URLSearchParams(window.location.search);
-  const initialVersion = params.get('version') === 'v1' ? 'v1' : 'v3';
+  const requestedVersion = params.get('version');
+  const initialVersion = ['v1', 'v3'].includes(requestedVersion) ? requestedVersion : 'v4';
   let currentVersion = initialVersion;
-  const panoramaV1 = new PANOLENS.ImagePanorama('v1.webp');
-  const panoramaV3 = new PANOLENS.ImagePanorama('v3.webp');
+  const panoramas = {
+    v1: new PANOLENS.ImagePanorama('v1.webp'),
+    v3: new PANOLENS.ImagePanorama('v3.webp'),
+    v4: new PANOLENS.ImagePanorama('v4.webp')
+  };
 
   const viewer = new PANOLENS.Viewer({
     container: document.getElementById('panorama'),
@@ -150,8 +154,8 @@
     output: 'console'
   });
 
-  // Add only the initial panorama first. The second one is added when requested.
-  const initialPanorama = currentVersion === 'v1' ? panoramaV1 : panoramaV3;
+  // Add only the initial panorama first. Others are added when requested.
+  const initialPanorama = panoramas[currentVersion];
   viewer.add(initialPanorama);
 
   const cursorLoader = document.getElementById('cursorLoader');
@@ -172,13 +176,13 @@
       return;
     }
     currentVersion = version;
-    const next = version === 'v1' ? panoramaV1 : panoramaV3;
+    const next = panoramas[version];
     if (!next.parent) viewer.add(next);
     showLoader();
     viewer.setPanorama(next);
     const url = new URL(window.location.href);
-    if (version === 'v1') url.searchParams.set('version', 'v1');
-    else url.searchParams.delete('version');
+    if (version === 'v4') url.searchParams.delete('version');
+    else url.searchParams.set('version', version);
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
     closeMenu();
   }
@@ -200,8 +204,16 @@
 
     const items = [
       {
-        label: currentVersion === 'v1' ? 'Default version' : 'Alternative version',
-        action: () => switchPanorama(currentVersion === 'v1' ? 'v3' : 'v1')
+        label: '25/11/26 - latest',
+        action: () => switchPanorama('v4')
+      },
+      {
+        label: '23/11/26',
+        action: () => switchPanorama('v3')
+      },
+      {
+        label: '20/11/26',
+        action: () => switchPanorama('v1')
       },
       {
         label: 'Credentials',
@@ -253,7 +265,7 @@
     return { yaw: Math.round(yaw), pitch: Math.round(pitch) };
   }
 
-  [panoramaV1, panoramaV3].forEach(panorama => {
+  Object.entries(panoramas).forEach(([version, panorama]) => {
     panorama.addEventListener('enter-fade-start', () => {
       setTimeout(hideCursorLoader, 250);
     });
@@ -267,7 +279,7 @@
       const ang = xyzToYawPitch(point.x, point.y, point.z);
       console.log('----------------------------------');
       console.log('Project: 19006_MP_2026');
-      console.log('Panorama: ' + (panorama === panoramaV1 ? 'v1.webp' : 'v3.webp'));
+      console.log('Panorama: ' + version + '.webp');
       console.log(`XYZ: ${x}, ${y}, ${z}`);
       console.log(`Yaw/Pitch: ${ang.yaw}°, ${ang.pitch}°`);
       console.log(`spot.position.set(${x}, ${y}, ${z});`);
